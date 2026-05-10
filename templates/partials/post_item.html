@@ -1,0 +1,24 @@
+<article class="post-item">
+    <h2 class="post-item-title">
+        <a href="/{{ post.permalink }}">{{ post.title }}</a>
+    </h2>
+    <div class="post-item-meta">
+        <time>{{ post.date }}</time>
+        <span class="post-views busuanzi-page-views" data-path="/{{ post.permalink }}/">
+            <span class="busuanzi-page-count">-</span> 次访问
+        </span>
+        {% if post.categories %}
+        {% for cat in post.categories %}
+        <a href="/categories/{{ cat }}/" class="badge">{{ cat }}</a>
+        {% endfor %}
+        {% endif %}
+    </div>
+    {% if post.excerpt %}
+    <div class="post-item-excerpt prose">
+        {{ post.excerpt | safe }}
+    </div>
+    {% endif %}
+    {% if post.has_more %}
+    <a href="/{{ post.permalink }}" class="read-more">阅读全文 &rarr;</a>
+    {% endif %}
+</article>

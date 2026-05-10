@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}归档 - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="archive">
+    <h1 class="archive-title">归档</h1>
+    {% for item in archive %}
+    <div class="archive-year">
+        <h2>{{ item.year }}</h2>
+        <ul class="archive-list">
+            {% for post in item.posts %}
+            <li>
+                <time>{{ post.date }}</time>
+                <a href="/{{ post.permalink }}">{{ post.title }}</a>
+                {% for cat in post.categories %}
+                <span class="badge">{{ cat }}</span>
+                {% endfor %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

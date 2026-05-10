@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}标签 - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="tags-page">
+    <h1 class="page-title">标签</h1>
+    <div class="tag-cloud">
+        {% for item in tags %}
+        <a href="/tags/{{ item.tag }}/" class="tag-cloud-item" data-count="{{ item.count }}">
+            {{ item.tag }} <span class="tag-count">({{ item.count }})</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

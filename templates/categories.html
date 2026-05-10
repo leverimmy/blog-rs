@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}分类 - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="categories-page">
+    <h1 class="page-title">分类</h1>
+    <ul class="category-list">
+        {% for item in categories %}
+        <li>
+            <a href="/categories/{{ item.cat }}/">{{ item.cat }}</a>
+            <span class="category-count">({{ item.count }})</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

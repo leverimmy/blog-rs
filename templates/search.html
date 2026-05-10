@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}搜索 - {{ site.title }}{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7/dist/fuse.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h1 class="page-title">搜索</h1>
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="输入关键词..." autofocus>
+        <button id="search-btn">搜索</button>
+    </div>
+    <div id="search-status" class="search-status"></div>
+    <div id="search-results" class="search-results"></div>
+</div>
+
+<script>
+var searchInput = document.getElementById('search-input');
+var searchBtn = document.getElementById('search-btn');
+var searchResults = document.getElementById('search-results');
+var searchStatus = document.getElementById('search-status');
+var fuseIndex = null;
+
+searchStatus.textContent = '正在加载索引...';
+
+fetch('/search.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        fuseIndex = new Fuse(data, {
+            keys: ['title', 'content', 'excerpt', 'tags', 'categories'],
+            threshold: 0.3,
+            ignoreLocation: true,
+        });
+        searchStatus.textContent = '';
+        // Auto-search if there's already text (e.g. from URL params)
+        if (searchInput.value.trim()) doSearch();
+    })
+    .catch(function(err) {
+        searchStatus.textContent = '加载搜索数据失败';
+        console.error('Search load error:', err);
+    });
+
+searchBtn.addEventListener('click', doSearch);
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+});
+searchInput.addEventListener('input', doSearch);
+
+function doSearch() {
+    var query = searchInput.value.trim();
+    if (!query) {
+        searchResults.innerHTML = '';
+        return;
+    }
+    if (!fuseIndex) {
+        searchStatus.textContent = '索引加载中，请稍候...';
+        return;
+    }
+    searchStatus.textContent = '';
+    var items = fuseIndex.search(query);
+    if (items.length === 0) {
+        searchResults.innerHTML = '<p class="search-empty">没有找到相关文章</p>';
+        return;
+    }
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+        var p = items[i].item;
+        var tagHtml = '';
+        if (p.tags && p.tags.length) {
+            tagHtml = p.tags.map(function(t) { return '<span class="badge">' + t + '</span>'; }).join(' ');
+        }
+        html += '<div class="search-item">' +
+            '<a href="/' + p.permalink + '" class="search-item-title">' + p.title + '</a>' +
+            '<div class="search-item-meta"><time>' + p.date + '</time> ' + tagHtml + '</div>' +
+            '<p class="search-item-excerpt">' + p.excerpt.substring(0, 150) + '...</p>' +
+            '</div>';
+    }
+    searchResults.innerHTML = html;
+}
+</script>
+{% endblock %}

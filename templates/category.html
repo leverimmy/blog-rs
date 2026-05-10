@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}分类: {{ category }} - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="category-page">
+    <h1 class="page-title">分类: {{ category }}</h1>
+    <div class="post-list">
+        {% for post in posts %}
+        {% include "partials/post_item.html" %}
+        {% endfor %}
+    </div>
+    <a href="/categories/">&larr; 所有分类</a>
+</div>
+{% endblock %}

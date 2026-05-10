@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}标签: {{ tag }} - {{ site.title }}{% endblock %}
+
+{% block content %}
+<div class="tag-page">
+    <h1 class="page-title">标签: {{ tag }}</h1>
+    <div class="post-list">
+        {% for post in posts %}
+        {% include "partials/post_item.html" %}
+        {% endfor %}
+    </div>
+    <a href="/tags/">&larr; 所有标签</a>
+</div>
+{% endblock %}
