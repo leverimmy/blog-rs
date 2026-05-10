@@ -106,6 +106,7 @@ pub fn extract(markdown: &str) -> ExtractedTags {
 pub fn render_tag(tag: &HexoTag, inner_html: &str) -> String {
     match tag {
         HexoTag::Note { note_type, .. } => {
+            // note_type is validated by regex to only match \w+
             format!(
                 "<div class=\"note note-{note_type}\">\n{inner_html}\n</div>"
             )
@@ -117,14 +118,32 @@ pub fn render_tag(tag: &HexoTag, inner_html: &str) -> String {
             )
         }
         HexoTag::Video { src } => {
-            format!(
-                "<div class=\"video-container\"><video src=\"{src}\" preload=\"metadata\" controls playsinline></video></div>"
-            )
+            if let Some(safe) = safe_url(src) {
+                format!(
+                    "<div class=\"video-container\"><video src=\"{safe}\" preload=\"metadata\" controls playsinline></video></div>"
+                )
+            } else {
+                format!("<div class=\"video-container\"><!-- blocked unsafe URL: {} --></div>", crate::utils::html_escape(src))
+            }
         }
         HexoTag::Pdf { url, height } => {
-            format!(
-                "<div class=\"pdf-container\"><iframe src=\"{url}\" width=\"100%\" height=\"{height}\" frameborder=\"0\"></iframe></div>"
-            )
+            if let Some(safe) = safe_url(url) {
+                format!(
+                    "<div class=\"pdf-container\"><iframe src=\"{safe}\" width=\"100%\" height=\"{height}\" frameborder=\"0\"></iframe></div>"
+                )
+            } else {
+                format!("<div class=\"pdf-container\"><!-- blocked unsafe URL: {} --></div>", crate::utils::html_escape(url))
+            }
         }
+    }
+}
+
+/// Only allow http(s) and relative URLs. Blocks javascript:, data:, vbscript: etc.
+fn safe_url(url: &str) -> Option<String> {
+    let trimmed = url.trim();
+    if trimmed.starts_with("http://") || trimmed.starts_with("https://") || trimmed.starts_with('/') {
+        Some(trimmed.to_string())
+    } else {
+        None
     }
 }

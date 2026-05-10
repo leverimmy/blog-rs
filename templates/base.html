@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/highlight.css">
     <style>:root { --color-accent: {{ site.theme.accent_color }}; }</style>
+    {% if site.avatar %}<link rel="icon" type="image/jpeg" href="{{ site.avatar }}">{% endif %}
     {% if has_math %}
     <link rel="stylesheet" href="/css/katex.min.css">
     {% endif %}
