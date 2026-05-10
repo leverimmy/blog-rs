@@ -35,17 +35,15 @@
 
     <footer class="site-footer">
         <div class="footer-inner">
-            {% if site.icp %}
-            <div class="footer-beian">
-                <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">{{ site.icp }}</a>
-                {% if site.gongan %}
-                <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode={{ site.gongan_id }}" target="_blank" rel="noopener">{{ site.gongan }}</a>
-                {% endif %}
-            </div>
-            {% endif %}
-            <p>&copy; {{ site.since }} – {{ site.current_year }} {{ site.author }}</p>
+            <p>&copy; {{ site.since }} – {{ site.current_year }} <a href="https://github.com/{{ site.github }}" target="_blank" rel="noopener">{{ site.author }}</a> · Powered by <a href="https://github.com/leverimmy/blog-rs" target="_blank" rel="noopener">blog-rs</a></p>
             <p>访问人数 <span id="busuanzi_value_site_uv"></span> 访问次数 <span id="busuanzi_value_site_pv"></span></p>
-            <p>Powered by blog-rs</p>
+            {% if site.icp %}
+            <p class="footer-beian"><a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">{{ site.icp }}</a></p>
+            {% endif %}
+            {% if site.gongan %}
+            <p class="footer-beian"><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode={{ site.gongan_id }}" target="_blank" rel="noopener"><img src="/gallery/misc/icp.png" alt="" class="beian-icon">{{ site.gongan }}</a></p>
+            {% endif %}
+            <p>本站作品采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 协议进行许可</p>
         </div>
     </footer>
 

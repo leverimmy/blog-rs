@@ -247,4 +247,4 @@ CDN 加载的外部资源：
 
 ## 许可
 
-MIT
+博客文章采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议发布。

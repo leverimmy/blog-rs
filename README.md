@@ -16,3 +16,7 @@ cargo run -- serve    # 构建并在 localhost:3000 预览
 ## 技术文档
 
 详细的配置参考、内容格式、渲染管线说明见 [ARCHITECTURE.md](ARCHITECTURE.md)。
+
+## 许可
+
+博客文章采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans) 协议发布。

@@ -564,8 +564,16 @@ img { max-width: 100%; height: auto; }
 .footer-beian a {
     color: #999;
     margin: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
 }
 .footer-beian a:hover { color: #666; }
+.beian-icon {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+}
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
