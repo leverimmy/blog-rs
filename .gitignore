@@ -1,16 +1,2 @@
-# Build artifacts
 /target
 /public
-
-# User content (override the template files in your fork)
-# The template keeps example files; your fork replaces them.
-config.toml
-content/_posts/*.md
-!content/_posts/hello-world.md
-content/gallery/*
-!content/gallery/misc/.gitkeep
-content/pdf/*
-!content/pdf/.gitkeep
-content/about/index.md
-content/links/index.md
-content/services/index.md
