@@ -4,7 +4,7 @@
     </h2>
     <div class="post-item-meta">
         <time>{{ post.date }}</time>
-        <span class="post-views"><span data-count-path="/{{ post.permalink }}/">-</span> 次访问</span>
+        <span class="post-views"><span data-count-path="/{{ post.permalink }}">-</span> 次访问</span>
         {% if post.categories %}
         {% for cat in post.categories %}
         <a href="/categories/{{ cat }}/" class="badge">{{ cat }}</a>

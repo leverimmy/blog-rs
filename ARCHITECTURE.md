@@ -18,7 +18,7 @@ Rust 驱动的静态博客引擎，兼容 Hexo 内容格式。
 - **Giscus 评论** — 通过 `config.toml` 配置
 - **全文搜索** — Fuse.js 客户端模糊搜索，搜索标题、标签、分类和全文
 - **侧边栏个人资料** — 头像、作者名、座右铭、GitHub/Email 链接
-- **访问统计** — 不蒜子站点和文章级访问计数
+- **访问统计** — 自建计数 API（SQLite），详情页/列表页阅读数、热榜
 - **ICP 备案** — 可选 ICP 和公安备案链接
 - **开发服务器** — tiny_http，支持 CJK URL 百分号编码
 - **CJK 兼容** — 正则后处理修复中文字符旁的 `**粗体**` 和 `~~删除线~~`
@@ -57,14 +57,17 @@ blog-rs/
 │   ├── site.rs              # 站点构建器
 │   ├── serve.rs             # 开发服务器
 │   └── template.rs          # Tera 模板引擎设置
+├── counter/
+│   ├── counter.py           # 自建访问计数 API（Python + SQLite）
+│   └── blog-rs-counter.service  # systemd 服务单元
 ├── static/
 │   ├── css/main.css         # 主样式表
 │   ├── css/fonts/           # KaTeX 字体
-│   └── js/main.js           # 复制/换行按钮、不蒜子文章浏览量
+│   └── js/main.js           # 复制/换行按钮、计数 API 客户端
 ├── templates/               # Tera HTML 模板
-│   ├── base.html            # 布局（头部、底部、CSS/JS、不蒜子）
-│   ├── index.html           # 文章列表 + 侧边栏 + 分页
-│   ├── post.html            # 单篇文章（侧边栏、TOC、评论）
+│   ├── base.html            # 布局（头部、底部、CSS/JS）
+│   ├── index.html           # 文章列表 + 侧边栏 + 分页 + 热榜
+│   ├── post.html            # 单篇文章（侧边栏、TOC、评论、阅读数）
 │   ├── page.html            # 静态页面
 │   ├── search.html          # 全文搜索页（Fuse.js）
 │   ├── archive.html         # 按年归档
@@ -112,7 +115,7 @@ category_id = "your-category-id"
 | 字段 | 说明 |
 |---|---|
 | `avatar` | 头像图片路径（侧边栏显示） |
-| `github` | GitHub 用户名（侧边栏链接） |
+| `github` | GitHub 用户名（侧边栏链接、底部版权链接） |
 | `email` | 邮箱（侧边栏 mailto 链接） |
 | `motto` | 侧边栏作者名下的标语 |
 | `since` | 博客起始年份（底部版权） |
@@ -180,15 +183,27 @@ id: my-post-slug
 
 ### Hexo 标签
 
-```
+#### Note 提示框
+
+两种格式：
+
+```markdown
 {% note info %}
-这是一个信息提示框。
+普通提示框内容（展开显示）。
 {% endnote %}
 
-{% note default|primary|info|success|warning|danger %}
-提示框内容。
+{% note info no-icon 标题文字 %}
+默认折叠的提示框，点击标题展开。
 {% endnote %}
+```
 
+类型：`default`、`primary`、`info`、`success`、`warning`、`danger`。
+
+`no-icon` 可选。如果提供了标题文字，渲染为 `<details>` 折叠块；否则渲染为 `<div>` 展开块。
+
+#### 其他标签
+
+```markdown
 {% grouppicture 2-2 %}
 ![alt](image1.jpg)
 ![alt](image2.jpg)
@@ -216,10 +231,42 @@ print("Hello, world!")
 
 ## 访问统计
 
-[不蒜子](https://busuanzi.ibruce.info/) 提供零配置访问统计：
+自建计数 API，基于 Python + SQLite，部署在站点服务器上。
 
-- **站点级**：底部显示总访客数和访问次数
-- **文章级**：每篇文章显示访问次数
+### 架构
+
+- **counter.py** — 轻量 HTTP API 服务，监听 `127.0.0.1:8123`
+- **SQLite 数据库** — `counter.db`，存储每篇文章的 URL、标题和阅读数
+- **Nginx 反向代理** — `/api/` 请求转发到计数服务
+
+### API
+
+| 端点 | 方法 | 说明 |
+|---|---|---|
+| `/api/count` | POST | 增加指定 URL 的阅读数并返回当前值。Body: `{"url": "/path/", "title": "标题"}` |
+| `/api/counts` | GET | 返回所有文章阅读数，按阅读数降序。支持 `?top=N` 限制返回数量 |
+
+### 功能
+
+- **文章详情页** — 访问时自动调用 API 增加阅读数并显示
+- **列表页** — 从 API 获取每篇文章的阅读数并显示
+- **热榜** — 首页侧边栏显示阅读数前 5 的文章
+
+### 部署
+
+1. 将 `counter/counter.py` 放到服务器 `/home/www/blog-rs-counter/`
+2. 安装 systemd 服务：
+   ```bash
+   cp counter/blog-rs-counter.service /etc/systemd/system/
+   systemctl daemon-reload
+   systemctl enable --now blog-rs-counter
+   ```
+3. Nginx 添加反向代理：
+   ```nginx
+   location /api/ {
+       proxy_pass http://127.0.0.1:8123;
+   }
+   ```
 
 ## 渲染管线
 
@@ -238,10 +285,21 @@ print("Hello, world!")
 
 `public/` 目录包含完整静态站点，部署到任何静态托管服务即可。
 
-CDN 加载的外部资源：
+### GitHub Actions CI/CD
+
+推送到 `main` 分支自动部署：
+
+1. 检出代码 → 安装 Rust → 缓存 Cargo
+2. `cargo run -- build` 构建站点
+3. ImageMagick 压缩 gallery 图片
+4. rsync 部署 `public/` 到服务器（`--delete`）
+5. rsync 部署 `counter/` 到服务器（无 `--delete`，保留 `counter.db`）
+6. SSH 重启计数服务
+
+### CDN 加载的外部资源
+
 - **Mermaid.js** — 含 mermaid 代码块的页面加载
 - **Fuse.js** — 搜索页加载
-- **不蒜子** — 所有页面加载
 - **Giscus** — 文章页加载
 - **KaTeX CSS & 字体** — 本地打包在 `css/` 和 `css/fonts/`
 

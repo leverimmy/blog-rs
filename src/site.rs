@@ -325,7 +325,7 @@ pub fn build(config: &SiteConfig) -> Result<()> {
         let posts_meta: Vec<_> = rendered
             .iter()
             .map(|(post, _)| serde_json::json!({
-                "url": format!("/{}/", post.permalink),
+                "url": format!("/{}", post.permalink),
                 "title": post.frontmatter.title,
             }))
             .collect();
