@@ -320,6 +320,19 @@ pub fn build(config: &SiteConfig) -> Result<()> {
         fs::write(output_dir.join("search.json"), json)?;
     }
 
+    // Generate posts metadata (for counter hot list)
+    {
+        let posts_meta: Vec<_> = rendered
+            .iter()
+            .map(|(post, _)| serde_json::json!({
+                "url": format!("/{}/", post.permalink),
+                "title": post.frontmatter.title,
+            }))
+            .collect();
+        let json = serde_json::to_string(&posts_meta)?;
+        fs::write(output_dir.join("posts-meta.json"), json)?;
+    }
+
     // Generate search page
     {
         let ctx = base_context(config);

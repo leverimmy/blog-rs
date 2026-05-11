@@ -20,31 +20,53 @@ function toggleWrap(btn) {
     btn.classList.toggle('active');
 }
 
-// Busuanzi page views for post lists (homepage, tag, category pages)
+// Increment page view on article detail pages
 (function() {
-    var items = document.querySelectorAll('.busuanzi-page-views');
-    if (!items.length) return;
+    var el = document.getElementById('page-views');
+    if (!el) return;
+    var path = window.location.pathname;
+    var title = document.querySelector('.post-title');
+    var titleText = title ? title.textContent : '';
+    fetch('/api/count', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: path, title: titleText })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.views !== undefined) el.textContent = data.views;
+    }).catch(function() { el.textContent = '-'; });
+})();
 
-    var paths = [];
-    items.forEach(function(el) {
-        paths.push(el.getAttribute('data-path'));
-    });
+// Load view counts for list pages and render hot list
+(function() {
+    var countEls = document.querySelectorAll('[data-count-path]');
+    var hotList = document.getElementById('hot-list');
+    if (!countEls.length && !hotList) return;
 
-    // Use busuanzi JSONP-like API for each path
-    items.forEach(function(el) {
-        var path = el.getAttribute('data-path');
-        var countEl = el.querySelector('.busuanzi-page-count');
-        var callbackName = 'bz_cb_' + path.replace(/[^a-zA-Z0-9]/g, '_');
-        window[callbackName] = function(data) {
-            if (data && data.page_pv !== undefined) {
-                countEl.textContent = data.page_pv;
-            } else {
-                countEl.textContent = '0';
-            }
-            delete window[callbackName];
-        };
-        var script = document.createElement('script');
-        script.src = 'https://busuanzi.ibruce.info/busuanzi?jsoncallback=' + callbackName + '&VN=sitedata&UV=siteuv&PG=pagepv&URL=' + encodeURIComponent(path);
-        document.body.appendChild(script);
+    fetch('/api/counts?top=5').then(function(r) { return r.json(); }).then(function(data) {
+        var countMap = {};
+        data.counts.forEach(function(item) { countMap[item.url] = item.views; });
+
+        // Update per-post counts on list pages
+        countEls.forEach(function(el) {
+            var path = el.getAttribute('data-count-path');
+            el.textContent = countMap[path] || 0;
+        });
+
+        // Render hot list in sidebar
+        if (hotList && data.counts.length > 0) {
+            // Load posts metadata for titles
+            fetch('/posts-meta.json').then(function(r) { return r.json(); }).then(function(meta) {
+                var titleMap = {};
+                meta.forEach(function(item) { titleMap[item.url] = item.title; });
+                var html = '';
+                data.counts.forEach(function(item) {
+                    var t = titleMap[item.url] || item.title || item.url;
+                    html += '<li><a href="' + item.url + '">' + t + '</a> <span class="hot-count">' + item.views + '</span></li>';
+                });
+                hotList.innerHTML = html;
+            }).catch(function() {});
+        }
+    }).catch(function() {
+        countEls.forEach(function(el) { el.textContent = '-'; });
     });
 })();

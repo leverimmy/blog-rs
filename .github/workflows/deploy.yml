@@ -28,13 +28,26 @@ jobs:
       - name: 4. 构建站点
         run: cargo run -- build
 
-      - name: 5. 写入 SSH 密钥
+      - name: 5. 压缩图片
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          find public/gallery -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | while read -r file; do
+              convert "$file" -define jpeg:extent=800k "$file"
+              echo "Compressed: $file"
+          done
+
+      - name: 6. 写入 SSH 密钥
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      - name: 6. 部署到服务器
+      - name: 7. 部署到服务器
         run: |
           rsync -avz --delete public/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
+          rsync -avz counter/ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.COUNTER_PATH }}
+
+      - name: 8. 重启计数服务
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "systemctl restart blog-rs-counter || (cd ${{ secrets.COUNTER_PATH }} && python3 counter.py &)"

@@ -37,7 +37,6 @@
     <footer class="site-footer">
         <div class="footer-inner">
             <p>&copy; {{ site.since }} – {{ site.current_year }} <a href="https://github.com/{{ site.github }}" target="_blank" rel="noopener">{{ site.author }}</a> · Powered by <a href="https://github.com/leverimmy/blog-rs" target="_blank" rel="noopener">blog-rs</a></p>
-            <p>访问人数 <span id="busuanzi_value_site_uv"></span> 访问次数 <span id="busuanzi_value_site_pv"></span></p>
             {% if site.icp %}
             <p class="footer-beian"><a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">{{ site.icp }}</a></p>
             {% endif %}
@@ -49,7 +48,6 @@
     </footer>
 
     <script src="/js/main.js"></script>
-    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     {% if has_mermaid %}
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true,theme:'default',securityLevel:'loose'});</script>
