@@ -252,6 +252,21 @@ img { max-width: 100%; height: auto; }
 
 .prose img { border-radius: 4px; }
 
+/* Redacted strikethrough: black block, hover to reveal */
+.prose del {
+    background: #333;
+    color: #333;
+    text-decoration: none;
+    border-radius: 3px;
+    padding: 0 4px;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+}
+.prose del:hover {
+    background: transparent;
+    color: inherit;
+}
+
 /* ===== Code Blocks ===== */
 .code-block {
     margin: 0 0 1em 0;
