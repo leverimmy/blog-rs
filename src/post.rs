@@ -106,8 +106,7 @@ fn split_excerpt(body: &str) -> (String, String, bool) {
         let full_body = body[..cap.start()].to_string() + &body[cap.end()..];
         (excerpt, full_body, true)
     } else {
-        let excerpt: String = body.chars().take(300).collect();
-        (excerpt, body.to_string(), false)
+        (body.to_string(), body.to_string(), false)
     }
 }
 
