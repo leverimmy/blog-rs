@@ -153,7 +153,7 @@ pub fn build(config: &SiteConfig) -> Result<()> {
         let paginator = serde_json::json!({
             "current": page + 1,
             "total_pages": total_pages,
-            "prev": if page > 0 { Some(format!("/page/{}/", page)) } else { None::<String> },
+            "prev": if page > 1 { Some(format!("/page/{}/", page)) } else if page == 1 { Some("/".to_string()) } else { None::<String> },
             "next": if page + 1 < total_pages { Some(format!("/page/{}/", page + 2)) } else { None::<String> },
         });
         ctx.insert("paginator", &paginator);
