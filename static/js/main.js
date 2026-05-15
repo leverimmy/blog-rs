@@ -54,12 +54,12 @@ function toggleWrap(btn) {
 
         // Render hot list in sidebar (top 5 from full data)
         if (hotList && data.counts.length > 0) {
-            var top10 = data.counts.slice(0, 10);
+            var top5 = data.counts.slice(0, 5);
             fetch('/posts-meta.json').then(function(r) { return r.json(); }).then(function(meta) {
                 var titleMap = {};
                 meta.forEach(function(item) { titleMap[item.url] = item.title; });
                 var html = '';
-                top10.forEach(function(item) {
+                top5.forEach(function(item) {
                     var t = titleMap[item.url] || item.title || item.url;
                     html += '<li><a href="' + item.url + '">' + t + '</a> <span class="hot-count">' + item.views + '</span></li>';
                 });
