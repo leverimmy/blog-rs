@@ -251,6 +251,15 @@ img { max-width: 100%; height: auto; }
 .prose tr:nth-child(even) { background: #fafafa; }
 
 .prose img { border-radius: 4px; }
+.prose figure {
+    margin: 1em 0;
+    text-align: center;
+}
+.prose figcaption {
+    font-size: 0.85rem;
+    color: #888;
+    margin-top: 6px;
+}
 
 /* Redacted strikethrough: black block, hover to reveal */
 .prose del {

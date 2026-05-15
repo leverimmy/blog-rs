@@ -20,7 +20,10 @@ use std::sync::LazyLock;
 
 use crate::post::Post;
 
-// Fallback regexes for cases pulldown-cmark misses (e.g. CJK-adjacent)
+// Wrap <img> with alt text into <figure> with <figcaption>
+static IMG_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"<img\s+([^>]*)alt="([^"]+)"([^>]*)>"#).unwrap()
+});
 static STRIKETHROUGH_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"~~([^~]+)~~").unwrap()
 });
@@ -99,6 +102,16 @@ pub fn render_with_hexo_tags(text: &str, opts: &markdown::RenderOptions) -> Stri
         let placeholder_raw = format!("<<PLACEHOLDER_{i}>>");
         result.html = result.html.replace(&placeholder_raw, &tag_html);
     }
+
+    // Wrap images with alt text in <figure>
+    result.html = IMG_RE
+        .replace_all(&result.html, |caps: &regex::Captures| {
+            let before = &caps[1];
+            let alt = &caps[2];
+            let after = &caps[3];
+            format!("<figure><img {before}alt=\"{alt}\"{after}><figcaption>{alt}</figcaption></figure>")
+        })
+        .into_owned();
 
     // Fallback: fix unrendered markdown due to CJK-adjacent delimiters
     result.html = STRIKETHROUGH_RE
