@@ -40,6 +40,8 @@ pub struct Frontmatter {
     #[serde(default)]
     #[allow(dead_code)]
     pub password: Option<String>,
+    #[serde(default)]
+    pub sticky: bool,
 }
 
 #[derive(Debug)]

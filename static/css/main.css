@@ -447,6 +447,14 @@ img { max-width: 100%; height: auto; }
 }
 .post-item-title a { color: #222; }
 .post-item-title a:hover { color: var(--color-accent); text-decoration: none; }
+.sticky-badge {
+    background: #d9534f;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
 .post-item-meta {
     font-size: 0.85rem;
     color: #999;

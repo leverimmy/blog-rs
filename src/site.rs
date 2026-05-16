@@ -19,6 +19,7 @@ struct PostData {
     date: String,
     tags: Vec<String>,
     categories: Vec<String>,
+    sticky: bool,
     permalink: String,
     excerpt: String,
     has_more: bool,
@@ -56,8 +57,14 @@ pub fn build(config: &SiteConfig) -> Result<()> {
         }
     }
 
-    // Sort by date descending
-    posts.sort_by(|a, b| b.frontmatter.date.cmp(&a.frontmatter.date));
+    // Sort: sticky first, then by date descending
+    posts.sort_by(|a, b| {
+        match (a.frontmatter.sticky, b.frontmatter.sticky) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => b.frontmatter.date.cmp(&a.frontmatter.date),
+        }
+    });
 
     log::info!("Loaded {} posts", posts.len());
 
@@ -81,6 +88,7 @@ pub fn build(config: &SiteConfig) -> Result<()> {
             permalink: post.permalink.clone(),
             excerpt: html.excerpt_html.clone(),
             has_more: post.has_more,
+            sticky: post.frontmatter.sticky,
         })
         .collect();
 
@@ -146,6 +154,7 @@ pub fn build(config: &SiteConfig) -> Result<()> {
                 "permalink": p.permalink,
                 "excerpt": p.excerpt,
                 "has_more": p.has_more,
+                "sticky": p.sticky,
             }))
             .collect();
         ctx.insert("posts", &posts_json);
