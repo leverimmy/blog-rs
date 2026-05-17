@@ -52,15 +52,20 @@ function toggleWrap(btn) {
             el.textContent = countMap[path] || 0;
         });
 
-        // Render hot list in sidebar (top 5 from full data)
+        // Render hot list in sidebar (top 5, only existing posts)
         if (hotList && data.counts.length > 0) {
-            var top5 = data.counts.slice(0, 5);
             fetch('/posts-meta.json').then(function(r) { return r.json(); }).then(function(meta) {
+                var existing = {};
                 var titleMap = {};
-                meta.forEach(function(item) { titleMap[item.url] = item.title; });
+                meta.forEach(function(item) {
+                    existing[item.url] = true;
+                    titleMap[item.url] = item.title;
+                });
+                var filtered = data.counts.filter(function(item) { return existing[item.url]; });
+                var top5 = filtered.slice(0, 5);
                 var html = '';
                 top5.forEach(function(item) {
-                    var t = titleMap[item.url] || item.title || item.url;
+                    var t = titleMap[item.url] || item.url;
                     html += '<li><a href="' + item.url + '">' + t + '</a> <span class="hot-count">' + item.views + '</span></li>';
                 });
                 hotList.innerHTML = html;
