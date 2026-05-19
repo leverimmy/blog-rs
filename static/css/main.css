@@ -382,6 +382,80 @@ img { max-width: 100%; height: auto; }
     font-family: monospace;
 }
 
+/* ===== Post Copyright ===== */
+.post-copyright {
+    margin-top: 24px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--color-accent);
+    background: #f9f9f9;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+.post-copyright ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.post-copyright li {
+    padding: 2px 0;
+    color: #555;
+}
+.post-copyright a { color: var(--color-accent); }
+
+/* ===== Reward ===== */
+.reward-container {
+    text-align: center;
+}
+.reward-container button {
+    width: 48px;
+    height: 48px;
+    border: 2px solid #f0ad4e;
+    border-radius: 50%;
+    background: none;
+    color: #f0ad4e;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+}
+.reward-container button:hover {
+    background: #f0ad4e;
+    color: #fff;
+}
+.post-reward {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+.post-reward.active {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+.post-reward > div {
+    text-align: center;
+}
+.post-reward img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.post-reward span {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #999;
+}
+
 /* ===== Giscus Comments ===== */
 .giscus {
     margin-top: 40px;
@@ -567,14 +641,19 @@ img { max-width: 100%; height: auto; }
 
 /* ===== Post Footer (prev/next nav) ===== */
 .post-footer {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    position: relative;
     margin-top: 30px;
     padding-top: 16px;
     border-top: 1px solid #eee;
 }
 .post-nav {
-    max-width: 45%;
+    min-width: 0;
+}
+.post-nav.next {
+    text-align: right;
 }
 .post-nav span {
     display: block;

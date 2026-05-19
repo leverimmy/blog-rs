@@ -14,7 +14,6 @@ pub struct SiteConfig {
     #[serde(default)]
     pub subtitle: String,
     pub author: String,
-    #[allow(dead_code)]
     pub url: String,
     #[serde(default = "default_language")]
     pub language: String,

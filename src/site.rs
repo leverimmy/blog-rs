@@ -367,6 +367,7 @@ fn site_json(config: &SiteConfig) -> serde_json::Value {
         "title": config.title,
         "subtitle": config.subtitle,
         "author": config.author,
+        "url": config.url,
         "language": config.language,
         "since": config.since,
         "avatar": config.avatar,

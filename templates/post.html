@@ -63,6 +63,15 @@
                 <a href="/{{ prev_post.permalink }}">{{ prev_post.title }}</a>
             </div>
             {% endif %}
+            <div class="reward-container">
+                <button onclick="document.querySelector('.post-reward').classList.toggle('active')">赞赏</button>
+                <div class="post-reward">
+                    <div>
+                        <img src="/gallery/misc/wechatpay.jpg" alt="微信支付">
+                        <span>微信支付</span>
+                    </div>
+                </div>
+            </div>
             {% if next_post %}
             <div class="post-nav next">
                 <span>下一篇</span>
@@ -70,6 +79,14 @@
             </div>
             {% endif %}
         </footer>
+
+        <div class="post-copyright">
+            <ul>
+                <li><strong>本文作者：</strong><a href="https://github.com/{{ site.github }}" target="_blank" rel="noopener">{{ site.author }}</a></li>
+                <li><strong>本文链接：</strong><a href="{{ site.url }}{{ post.permalink }}">{{ site.url }}{{ post.permalink }}</a></li>
+                <li><strong>版权声明：</strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> 协议进行许可。</li>
+            </ul>
+        </div>
 
         {% if site.giscus.enabled %}
         <div class="giscus">
