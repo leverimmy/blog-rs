@@ -52,16 +52,25 @@ function toggleWrap(btn) {
             el.textContent = countMap[path] || 0;
         });
 
-        // Render hot list in sidebar (top 5, only existing posts)
+        // Render hot list in sidebar (top 5 by hot score, only existing posts)
         if (hotList && data.counts.length > 0) {
             fetch('/posts-meta.json').then(function(r) { return r.json(); }).then(function(meta) {
                 var existing = {};
+                var dateMap = {};
                 var titleMap = {};
                 meta.forEach(function(item) {
                     existing[item.url] = true;
                     titleMap[item.url] = item.title;
+                    dateMap[item.url] = item.date;
                 });
                 var filtered = data.counts.filter(function(item) { return existing[item.url]; });
+                // Hot score: views / (age_in_days + 2)^0.5
+                var now = new Date();
+                filtered.sort(function(a, b) {
+                    var daysA = Math.max(1, (now - new Date(dateMap[a.url])) / 86400000);
+                    var daysB = Math.max(1, (now - new Date(dateMap[b.url])) / 86400000);
+                    return (b.views / Math.pow(daysB + 2, 0.5)) - (a.views / Math.pow(daysA + 2, 0.5));
+                });
                 var top5 = filtered.slice(0, 5);
                 var html = '';
                 top5.forEach(function(item) {

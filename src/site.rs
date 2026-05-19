@@ -342,6 +342,7 @@ pub fn build(config: &SiteConfig) -> Result<()> {
             .map(|(post, _)| serde_json::json!({
                 "url": format!("/{}", post.permalink),
                 "title": post.frontmatter.title,
+                "date": post.frontmatter.date.format("%Y-%m-%d").to_string(),
             }))
             .collect();
         let json = serde_json::to_string(&posts_meta)?;
