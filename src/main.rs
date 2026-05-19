@@ -45,8 +45,13 @@ fn main() -> anyhow::Result<()> {
         }
         Cli::Serve { port } => {
             site::build(&config)?;
+            let output_dir = config.output_dir.clone();
             println!("Site built. Starting server...");
-            serve::serve(std::path::Path::new(&config.output_dir), port)?;
+            serve::serve(
+                std::path::Path::new(&output_dir),
+                port,
+                move || site::build(&config),
+            )?;
         }
     }
 
