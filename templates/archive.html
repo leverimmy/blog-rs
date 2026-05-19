@@ -14,7 +14,7 @@
                 <time>{{ post.date }}</time>
                 <a href="/{{ post.permalink }}">{{ post.title }}</a>
                 {% for cat in post.categories %}
-                <span class="badge">{{ cat }}</span>
+                <a href="/categories/{{ cat }}/" class="badge">{{ cat }}</a>
                 {% endfor %}
             </li>
             {% endfor %}

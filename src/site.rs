@@ -222,6 +222,9 @@ pub fn build(config: &SiteConfig) -> Result<()> {
                     "title": p.title,
                     "date": p.date,
                     "permalink": p.permalink,
+                    "tags": p.tags,
+                    "categories": p.categories,
+                    "sticky": p.sticky,
                 }));
             }
         }
@@ -265,6 +268,9 @@ pub fn build(config: &SiteConfig) -> Result<()> {
                     "title": p.title,
                     "date": p.date,
                     "permalink": p.permalink,
+                    "tags": p.tags,
+                    "categories": p.categories,
+                    "sticky": p.sticky,
                 }));
             }
         }

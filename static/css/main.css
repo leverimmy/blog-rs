@@ -178,14 +178,17 @@ img { max-width: 100%; height: auto; }
     flex-wrap: wrap;
     align-items: center;
 }
-.post-meta .tag {
-    background: #eee;
-    padding: 2px 8px;
-    border-radius: 3px;
+.post-meta .badge, .post-item-meta .badge {
     font-size: 0.8rem;
-    color: #666;
 }
-.post-meta .tag:hover { background: #ddd; text-decoration: none; }
+.post-meta .tag, .post-item-meta .tag {
+    color: var(--color-accent);
+}
+.post-meta .tag:hover, .post-item-meta .tag:hover {
+    background: var(--color-accent);
+    color: #fff;
+    text-decoration: none;
+}
 
 .post-body {
     background: #fff;
