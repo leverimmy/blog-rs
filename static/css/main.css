@@ -484,10 +484,30 @@ img { max-width: 100%; height: auto; }
 .note-danger  { border-left-color: #d9534f; background: #fdf5f5; }
 
 /* ===== Group Pictures ===== */
+.group-picture {
+    margin: 16px 0;
+}
+.group-picture .gp-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.group-picture .gp-row:last-child {
+    margin-bottom: 0;
+}
+.group-picture figure {
+    flex: 1;
+    margin: 0;
+}
 .group-picture img {
     width: 100%;
     border-radius: 4px;
     display: block;
+}
+.group-picture figcaption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #666;
 }
 
 /* ===== Video ===== */

@@ -154,10 +154,29 @@ pub fn render_tag(tag: &HexoTag, inner_html: &str) -> String {
             }
         }
         HexoTag::GroupPicture { layout, .. } => {
-            let cols = layout.split('-').next().unwrap_or("2").parse::<usize>().unwrap_or(2);
-            format!(
-                "<div class=\"group-picture\" style=\"display: grid; grid-template-columns: repeat({cols}, 1fr); gap: 4px;\">\n{inner_html}\n</div>"
-            )
+            let rows = grouppicture_layout(layout);
+            // Extract <figure>...</figure> blocks from inner HTML
+            static FIGURE_EXTRACT: LazyLock<Regex> = LazyLock::new(|| {
+                Regex::new(r"<figure>.*?</figure>").unwrap()
+            });
+            let figures: Vec<&str> = FIGURE_EXTRACT.find_iter(inner_html)
+                .map(|m| m.as_str())
+                .collect();
+
+            let mut html = String::from("<div class=\"group-picture\">");
+            let mut idx = 0;
+            for &count in &rows {
+                html.push_str("<div class=\"gp-row\">");
+                for _ in 0..count {
+                    if idx < figures.len() {
+                        html.push_str(figures[idx]);
+                        idx += 1;
+                    }
+                }
+                html.push_str("</div>");
+            }
+            html.push_str("</div>");
+            html
         }
         HexoTag::Video { src } => {
             if let Some(safe) = safe_url(src) {
@@ -187,5 +206,37 @@ fn safe_url(url: &str) -> Option<String> {
         Some(trimmed.to_string())
     } else {
         None
+    }
+}
+
+/// Map `{% grouppicture [total]-[layout] %}` to rows spec (items per row).
+/// Layouts follow Hexo NexT conventions.
+fn grouppicture_layout(spec: &str) -> Vec<usize> {
+    let parts: Vec<usize> = spec.split('-')
+        .filter_map(|s| s.parse().ok())
+        .collect();
+    let total = parts.first().copied().unwrap_or(2);
+    let layout = parts.get(1).copied().unwrap_or(1);
+
+    match (total, layout) {
+        (2, _) => vec![2],
+        (3, 1) => vec![3],
+        (3, 2) => vec![2, 1],
+        (3, 3) => vec![1, 2],
+        (4, 1) => vec![4],
+        (4, 2) => vec![2, 2],
+        (5, 1) => vec![5],
+        (5, 2) => vec![2, 3],
+        (6, 1) => vec![6],
+        (6, 2) => vec![3, 3],
+        (7, 1) => vec![7],
+        (7, 2) => vec![3, 4],
+        (8, 1) => vec![8],
+        (8, 2) => vec![4, 4],
+        (9, 1) => vec![9],
+        (9, 2) => vec![4, 5],
+        (10, 1) => vec![10],
+        (10, 2) => vec![5, 5],
+        _ => vec![total],
     }
 }

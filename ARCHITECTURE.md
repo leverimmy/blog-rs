@@ -229,19 +229,31 @@ id: my-post-slug
 
 `no-icon` 可选。如果提供了标题文字，渲染为 `<details>` 折叠块；否则渲染为 `<div>` 展开块。
 
-#### 其他标签
+#### Group Picture 图片组
 
 ```markdown
-{% grouppicture 2-2 %}
+{% grouppicture [总数]-[布局] %}
 ![alt](image1.jpg)
 ![alt](image2.jpg)
 {% endgrouppicture %}
-
-{% video /videos/demo.mp4 %}
-
-{% pdf https://example.com/paper.pdf %}
-{% pdf https://example.com/paper.pdf [800px] %}
 ```
+
+`总数` 为图片总数，`布局` 为布局编号：
+
+| 格式 | 布局 |
+|---|---|
+| 2-1 | 2 张一行 |
+| 3-1 | 3 张一行 |
+| 3-2 | 2 + 1（上2下1） |
+| 3-3 | 1 + 2（上1下2） |
+| 4-1 | 4 张一行 |
+| 4-2 | 2×2 |
+| 5-1 | 5 张一行 |
+| 5-2 | 2 + 3 |
+| 6-1 | 6 张一行 |
+| 6-2 | 3×2 |
+
+#### 其他标签
 
 ### 代码块
 
