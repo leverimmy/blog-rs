@@ -65,7 +65,7 @@ Kani 通过 **Loop Unwinding**（循环展开）的技术来解决这个问题�
 
 **工作方式**
 
-当你为 Kani 指定一个循环展开上界 $N$ 时（例如，通过 [`#[kani::unwind(N)]` attribute](#attributes<!-- TODO -->) 或使用命令行参数 `--default-unwind <N>`）：
+当你为 Kani 指定一个循环展开上界 $N$ 时（例如，通过 [`#[kani::unwind(N)]` attribute](#attributes) 或使用命令行参数 `--default-unwind <N>`）：
 
 1. Kani 会模拟执行循环的前 $N$ 次迭代（即索引从 $0$ 到 $N-1$ 的迭代）。
 2. 在第 $N$ 次迭代之后（即当索引为 $N$ 的迭代将要开始时），Kani 会插入一个 assertion，检查此时循环的条件是否为假（即循环是否应该终止）。
