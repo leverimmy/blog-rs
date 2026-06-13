@@ -10,7 +10,7 @@ mathjax: false
 toc: true
 date: 2026-06-09 14:56:38
 password:
-id: Tsnighua-Sports-Venue-Reservation-API-Reverse-Engineering
+id: Tsnighua-University-Sports-Venue-Reservation-API-Reverse-Engineering
 ---
 
 [华清大学体育场地预约系统](https://www.sports.tsinghua.edu.cn/venue/#/home) 的北体育馆中的乒乓球场地在 2026 年马约翰杯乒乓球比赛前后被严格监控是否预约，以至于需要线下签到。对于系乒乓球队而言，这无疑是非常困难的，因为每个人在同一时段只能预约一张球台；而系队训练一般需要多张。因此，一般是收集多个同学的账号进行预约。
