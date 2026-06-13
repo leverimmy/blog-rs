@@ -672,9 +672,12 @@ img { max-width: 100%; height: auto; }
 .post-nav {
     min-width: 0;
 }
+.post-nav.prev { grid-column: 1; }
 .post-nav.next {
+    grid-column: 3;
     text-align: right;
 }
+.reward-container { grid-column: 2; }
 .post-nav span {
     display: block;
     font-size: 0.8rem;
