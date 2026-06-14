@@ -19,7 +19,7 @@ id: Tsnighua-University-Sports-Venue-Reservation-API-Reverse-Engineering
 
 <!--more-->
 
-整体的思路分为两步。由于（众所周知）学校的各个系统网页端的鉴权几乎都是基于 Token~~（“词元”）~~的，所以第一步是逆向分析系统 API，此时 **假设我们已有合法 Token**。第二步再是实现自动登录获取 Token，以及免二次验证状态持久化。
+整体的思路分为两步。由于~~（众所周知）~~学校的各个系统网页端的鉴权几乎都是基于 Token~~（“词元”）~~的，所以第一步是逆向分析 API，此时 **假设我们已有合法 Token**。第二步再是实现自动登录获取 Token，以及免二次验证状态持久化。
 
 我们的唯一目标是 **获取预约二维码**。
 
@@ -33,7 +33,7 @@ curl 'https://www.sports.tsinghua.edu.cn/venue/site/api/reserve/user/qr?appId=14
   ...
 ```
 
-接口返回的 JSON 很短：
+接口返回的 JSON 为：
 
 ```json
 {
@@ -44,7 +44,7 @@ curl 'https://www.sports.tsinghua.edu.cn/venue/site/api/reserve/user/qr?appId=14
 }
 ```
 
-这里的 `data` 不是图片地址，也不是 Base64 图片，而是二维码里实际编码的字符串。前端拿到这段字符串之后，直接交给 QR Code 组件渲染将这个字符串展示为二维码。
+经过我~~仔细~~的分析，这里的 `data` 不是图片地址，也不是 Base64 图片，而是二维码里实际编码的字符串。前端拿到这段字符串之后，直接交给 QR Code 组件渲染将这个字符串展示为二维码。
 
 这样一来，问题就集中到 URL 后面的四个查询参数上：
 
@@ -55,13 +55,11 @@ curl 'https://www.sports.tsinghua.edu.cn/venue/site/api/reserve/user/qr?appId=14
 | `nonce` | 32 位随机字符串 |
 | `sign` | 请求签名 |
 
-多抓几次就能看出来 `appId` 是固定的；`timeStamp` 的数量级和当前毫秒时间戳一致；`nonce` 每次变化，而且长度稳定为 32。剩下的 `sign` 最关键，也最不可能靠猜。它通常会由前面几个字段加上某个密钥算出来，所以接下来要回到前端代码里找签名逻辑。
+多刷新几次请求就能看出来 `appId` 是固定的；`timeStamp` 的数量级和当前毫秒时间戳一致；`nonce` 每次变化，而且字符串长度稳定为 32。剩下的 `sign` 最关键。我猜它应该是某个签名算法的输出，输入则包含了前面三个参数以及某个密钥。
 
 ## 找到签名函数
 
-前端资源是打包后的 JS，文件名带 hash。我当时看到的是 `index.47b9a9bc.js`，以后重新部署后名字可能会变，所以文件名本身不重要，关键是搜索词。
-
-我先搜了几个最直接的关键词，`sign`、`appId`、`nonce` 和 `timeStamp`。
+我先在前端源代码里搜了几个最直接的关键词，`sign`、`appId`、`nonce` 和 `timeStamp`。
 
 签名逻辑一般会放在统一请求封装里，因为每个接口都要加同一套公共参数。顺着 `appId` 和 `sign` 往附近看，可以看到类似下面的模块：
 
@@ -111,7 +109,7 @@ b764: function(e, n, t) {
 -   `n` 来自 `getKeys().join("")`，看起来就是密钥。
 -   `r = a.default(s)`，其中 `s` 是待签名字符串。
 
-`a.default` 也需要确认一下。它来自 webpack 模块 `8078`，继续跳过去可以看到 `js-md5` 的注释：
+`a.default` 来自 webpack 的 `8078` 模块，继续跳过去可以看到 `js-md5` 的注释：
 
 ```javascript
 8078: function(t, e, n) {
@@ -198,7 +196,7 @@ b764: function(e, n, t) {
 },
 ```
 
-这段看起来绕，但本质只是把一个常量拆散再拼回去。前端真正使用的时候调用的是：
+这段的本质只是把一个常量拆散再拼回去。前端真正使用的时候调用的是：
 
 ```javascript
 getKeys().join("")
