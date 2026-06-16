@@ -232,6 +232,8 @@ id: my-post-slug
 
 `no-icon` 可选。如果提供了标题文字，渲染为 `<details>` 折叠块；否则渲染为 `<div>` 展开块。
 
+Note 内部内容会递归走完整 Markdown 渲染流程，因此可以包含普通段落、图片、代码块、`{% grouppicture %}`，以及会被替换成卡片的微信公众号链接。`hexo_tags::render_tag` 只负责把已经渲染好的内部 HTML 放进 `<div>` 或 `<details>`，不会再额外包一层 `<p>`，避免生成 `<p><p>...` 这类非法嵌套。
+
 #### Group Picture 图片组
 
 ```markdown
@@ -376,7 +378,7 @@ Markdown 链接目标如果是 `https://mp.weixin.qq.com/...` 或 `http://mp.wei
    - `CodeBlock` → syntect 高亮（主题来自配置）或 mermaid 直通
    - `Heading` → TOC 收集 + ID 注入
    - `Link` → 微信公众号链接替换为卡片 HTML
-3. **解析占位符** — 递归渲染内部内容并替换为最终 HTML
+3. **解析占位符** — 递归渲染内部内容并替换为最终 HTML。`note` / `grouppicture` 的内部 HTML 已经由递归 Markdown 渲染产生，替换时不再额外包段落
 
 最后正则后处理修复中文字符旁的 `**粗体**` 和 `~~删除线~~`。
 
