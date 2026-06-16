@@ -14,6 +14,7 @@ pub mod hexo_tags;
 pub mod markdown;
 pub mod math;
 pub mod toc;
+pub mod wechat;
 
 use regex::Regex;
 use std::sync::LazyLock;
@@ -44,12 +45,18 @@ pub struct PostHtml {
 /// `code_theme` is the syntect theme name (from `config.theme.code_theme`).
 /// `default_toc` is the global TOC default (from `config.theme.toc`), used when
 /// the post's frontmatter doesn't explicitly set `toc`.
-pub fn render_post(post: &Post, code_theme: &str, default_toc: bool) -> PostHtml {
+pub fn render_post(
+    post: &Post,
+    code_theme: &str,
+    default_toc: bool,
+    wechat_previews: Option<&wechat::WechatPreviewStore>,
+) -> PostHtml {
     let enable_toc = post.frontmatter.toc || default_toc;
     let opts = markdown::RenderOptions {
         enable_math: post.frontmatter.mathjax,
         enable_toc,
         code_theme: code_theme.to_string(),
+        wechat_previews,
     };
 
     // Full body rendering
@@ -63,6 +70,7 @@ pub fn render_post(post: &Post, code_theme: &str, default_toc: bool) -> PostHtml
         enable_math: false,
         enable_toc: true,
         code_theme: code_theme.to_string(),
+        wechat_previews: None,
     });
     let toc_html = toc::generate_toc(&toc_result.toc);
 

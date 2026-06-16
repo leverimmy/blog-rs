@@ -10,6 +10,7 @@ use crate::config::SiteConfig;
 use crate::post::Post;
 use crate::render;
 use crate::render::markdown;
+use crate::render::wechat::WechatPreviewStore;
 use crate::template;
 
 use tera::Context as TeraContext;
@@ -38,6 +39,7 @@ pub fn build(config: &SiteConfig) -> Result<()> {
     // Init template engine
     let tera = template::init(templates_dir)
         .context("Failed to initialize template engine")?;
+    let wechat_previews = WechatPreviewStore::load(".cache/wechat-previews.json", output_dir);
 
     // Read all posts
     let posts_dir = config.posts_dir();
@@ -72,7 +74,12 @@ pub fn build(config: &SiteConfig) -> Result<()> {
     let rendered: Vec<(Post, render::PostHtml)> = posts
         .into_iter()
         .map(|post| {
-            let html = render::render_post(&post, &config.theme.code_theme, config.theme.toc);
+            let html = render::render_post(
+                &post,
+                &config.theme.code_theme,
+                config.theme.toc,
+                Some(&wechat_previews),
+            );
             (post, html)
         })
         .collect();
@@ -315,7 +322,8 @@ pub fn build(config: &SiteConfig) -> Result<()> {
     fs::write(output_dir.join("css").join("highlight.css"), highlight_css)?;
 
     // Generate static pages (about, links, services)
-    generate_static_pages(config, &tera, output_dir)?;
+    generate_static_pages(config, &tera, output_dir, Some(&wechat_previews))?;
+    wechat_previews.save()?;
 
     // Generate search index
     {
@@ -430,6 +438,7 @@ fn generate_static_pages(
     config: &SiteConfig,
     tera: &tera::Tera,
     output_dir: &Path,
+    wechat_previews: Option<&WechatPreviewStore>,
 ) -> Result<()> {
     let pages = [
         ("about", "关于"),
@@ -450,6 +459,7 @@ fn generate_static_pages(
             enable_math: fm.mathjax,
             enable_toc: fm.toc,
             code_theme: config.theme.code_theme.clone(),
+            wechat_previews,
         };
         let rendered = crate::render::render_with_hexo_tags(&body, &opts);
 
