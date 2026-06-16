@@ -5,6 +5,7 @@ Rust 驱动的静态博客引擎，兼容 Hexo 内容格式。
 ## 功能
 
 - **Markdown 渲染** — pulldown-cmark（表格、删除线、任务列表）
+- **微信公众号卡片** — Markdown 中的 `mp.weixin.qq.com` 链接构建时抓取标题、公众号、描述、头像和封面图，渲染为微信转发样式卡片
 - **LaTeX 数学** — 行内 `$...$` 和行间 `$$...$$`，KaTeX 服务端渲染
 - **代码高亮** — syntect 逐行高亮，行号、复制按钮、换行切换、可选标题
 - **Mermaid 图表** — mermaid.js 客户端渲染（`securityLevel: 'loose'` 支持图中 LaTeX）
@@ -44,6 +45,7 @@ cargo run -- serve -p 8080   # 指定端口
 ```
 blog-rs/
 ├── config.toml              # 站点配置
+├── .cache/                  # 构建缓存（gitignore）：微信元数据 JSON 和本地图片缓存
 ├── content/
 │   ├── _posts/              # 博客文章（Markdown）
 │   ├── about/               # 关于页面
@@ -55,10 +57,11 @@ blog-rs/
 │   ├── main.rs              # CLI 入口（build / serve）
 │   ├── config.rs            # 加载 config.toml
 │   ├── post.rs              # 文章解析、frontmatter、摘要分割
-│   ├── utils.rs             # 共享工具（html_escape）
+│   ├── utils.rs             # 共享工具（HTML escape/unescape）
 │   ├── render/
 │   │   ├── mod.rs           # 渲染管线协调器（三遍渲染）
 │   │   ├── markdown.rs      # pulldown-cmark 事件处理
+│   │   ├── wechat.rs        # 微信公众号链接元数据抓取、缓存和图片尺寸检测
 │   │   ├── code_highlight.rs # syntect 代码高亮
 │   │   ├── math.rs          # KaTeX 渲染
 │   │   ├── hexo_tags.rs     # Hexo 标签提取与渲染
@@ -255,6 +258,22 @@ id: my-post-slug
 
 #### 其他标签
 
+视频：
+
+```markdown
+{% video /gallery/demo.mp4 %}
+```
+
+渲染为带 `controls` 和 `playsinline` 的 `<video>`。只允许 `http://`、`https://` 和站内相对路径，其他协议会被阻止。
+
+PDF：
+
+```markdown
+{% pdf /pdf/CV.pdf [600px] %}
+```
+
+渲染为 `<iframe>`。高度参数可选，默认 `500px`；URL 安全规则同 video。
+
 ### 代码块
 
 ````markdown
@@ -275,7 +294,34 @@ print("Hello, world!")
 
 ### 删除线
 
-`~~文本~~` 渲染为黑色遮挡块，鼠标 hover 时显示原文内容。
+`~~文本~~` 渲染为黑色遮挡块，鼠标 hover 时显示原文内容。删除线内的链接默认跟随遮挡色，hover 到删除线区域时恢复链接高亮。
+
+### 微信公众号链接卡片
+
+Markdown 链接目标如果是 `https://mp.weixin.qq.com/...` 或 `http://mp.weixin.qq.com/...`，会被替换为微信转发样式卡片：
+
+```markdown
+[备注文本](https://mp.weixin.qq.com/s/...)
+```
+
+构建时 `src/render/wechat.rs` 会抓取并缓存：
+
+- 文章标题、描述、公众号名称
+- 公众号头像
+- `cover` 和 `thumbnail` 候选图
+- 候选图是否接近 1:1（`0.9 <= width / height <= 1.1`）
+
+缓存文件位于 `.cache/wechat-previews.json`，图片缓存位于 `.cache/wechat-assets/`。构建输出会把使用到的图片复制到 `public/wechat-previews/`。
+
+卡片布局按候选图实际比例选择，而不是只按字段名选择：
+
+1. 优先使用非 1:1 的 `cover`，作为上方大图。
+2. 否则使用接近 1:1 的 `thumbnail`，作为右侧小图。
+3. 否则使用接近 1:1 的 `cover`，作为右侧小图。
+4. 否则使用非 1:1 的 `thumbnail`，作为上方大图。
+5. 如果没有可用图片，显示默认微信图标。
+
+如果链接无法访问或页面没有可解析元数据，卡片标题回退为“无法访问该推送”。Markdown 链接文字不会作为可见 caption 输出，而是写入 `<a title="...">`，作为浏览器原生 hover 提示。
 
 ## 搜索
 
@@ -329,6 +375,7 @@ print("Hello, world!")
    - `InlineMath` / `DisplayMath` → KaTeX 渲染
    - `CodeBlock` → syntect 高亮（主题来自配置）或 mermaid 直通
    - `Heading` → TOC 收集 + ID 注入
+   - `Link` → 微信公众号链接替换为卡片 HTML
 3. **解析占位符** — 递归渲染内部内容并替换为最终 HTML
 
 最后正则后处理修复中文字符旁的 `**粗体**` 和 `~~删除线~~`。
@@ -348,7 +395,7 @@ print("Hello, world!")
 5. rsync 部署 `counter/` 到服务器（无 `--delete`，保留 `counter.db`）
 6. SSH 重启计数服务
 
-### CDN 加载的外部资源
+### 前端资源加载
 
 - **Mermaid.js** — 含 mermaid 代码块的页面加载
 - **Fuse.js** — 搜索页加载
