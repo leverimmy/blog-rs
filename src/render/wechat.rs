@@ -13,6 +13,7 @@ use std::time::Duration;
 use crate::utils::html_unescape;
 
 const CARD_ASSET_URL_PREFIX: &str = "/wechat-previews/";
+const FETCH_ATTEMPTS: usize = 3;
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct WechatPreview {
@@ -93,7 +94,7 @@ impl WechatPreviewStore {
             return None;
         }
 
-        match self.fetch_preview(&key) {
+        match self.fetch_preview_with_retries(&key) {
             Ok(preview) if preview.has_content() => {
                 self.ensure_output_images(&preview);
                 self.entries.borrow_mut().insert(key, preview.clone());
@@ -125,6 +126,31 @@ impl WechatPreviewStore {
         let json = serde_json::to_string_pretty(&*self.entries.borrow())?;
         fs::write(&self.cache_path, json)?;
         Ok(())
+    }
+
+    fn fetch_preview_with_retries(&self, url: &str) -> Result<WechatPreview> {
+        for attempt in 1..=FETCH_ATTEMPTS {
+            match self.fetch_preview(url) {
+                Ok(preview) if preview.has_content() || attempt == FETCH_ATTEMPTS => {
+                    return Ok(preview);
+                }
+                Ok(_) => {
+                    log::info!(
+                        "No WeChat metadata found for {url} on attempt {attempt}; retrying"
+                    );
+                }
+                Err(err) if attempt == FETCH_ATTEMPTS => return Err(err),
+                Err(err) => {
+                    log::info!(
+                        "Failed to fetch WeChat metadata for {url} on attempt {attempt}: {err:#}; retrying"
+                    );
+                }
+            }
+
+            std::thread::sleep(Duration::from_millis(400 * attempt as u64));
+        }
+
+        unreachable!("retry loop always returns on the final attempt")
     }
 
     fn fetch_preview(&self, url: &str) -> Result<WechatPreview> {
@@ -291,12 +317,10 @@ pub fn parse_wechat_html(html: &str) -> WechatPreview {
             meta.remove("twitter:description"),
         ]),
         account_name: first_non_empty([
+            cgi_data_value(html, "nick_name"),
             js_var(html, "nickname"),
             js_var(html, "nick_name"),
-            cgi_data_value(html, "nick_name"),
             html_text_by_id(html, "js_name"),
-            js_var(html, "user_name"),
-            cgi_data_value(html, "user_name"),
             meta.remove("author"),
         ]),
         cover_url: first_non_empty([
@@ -366,12 +390,12 @@ fn collect_meta_tags(html: &str) -> HashMap<String, String> {
 
 fn js_var(html: &str, name: &str) -> Option<String> {
     let double = Regex::new(&format!(
-        r#"(?s)\b(?:var\s+)?{}\s*=\s*(?:htmlDecode\()?"((?:\\.|[^"\\])*)""#,
+        r#"(?s)(?:^|[;\r\n])\s*(?:var\s+|window\.){}\s*=\s*(?:htmlDecode\()?"((?:\\.|[^"\\])*)""#,
         regex::escape(name)
     ))
     .ok()?;
     let single = Regex::new(&format!(
-        r#"(?s)\b(?:var\s+)?{}\s*=\s*(?:htmlDecode\()?'((?:\\.|[^'\\])*)'"#,
+        r#"(?s)(?:^|[;\r\n])\s*(?:var\s+|window\.){}\s*=\s*(?:htmlDecode\()?'((?:\\.|[^'\\])*)'"#,
         regex::escape(name)
     ))
     .ok()?;

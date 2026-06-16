@@ -248,7 +248,7 @@ impl WechatCardMedia<'_> {
     fn hero_html(&self) -> String {
         match self {
             Self::Hero(url) => format!(
-                "<span class=\"wechat-card-hero\" style=\"background-image:url('{}')\" aria-hidden=\"true\"></span>",
+                "<img class=\"wechat-card-hero\" src=\"{}\" alt=\"\" loading=\"lazy\">",
                 html_escape(url)
             ),
             Self::Side(_) | Self::Icon => String::new(),
@@ -258,7 +258,7 @@ impl WechatCardMedia<'_> {
     fn side_html(&self) -> String {
         match self {
             Self::Side(url) => format!(
-                "<span class=\"wechat-card-cover\" style=\"background-image:url('{}')\" aria-hidden=\"true\"></span>",
+                "<img class=\"wechat-card-cover\" src=\"{}\" alt=\"\" loading=\"lazy\">",
                 html_escape(url)
             ),
             Self::Hero(_) => String::new(),

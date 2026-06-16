@@ -94,8 +94,7 @@ pub fn render_with_hexo_tags(text: &str, opts: &markdown::RenderOptions) -> Stri
     for (i, tag) in extracted.tags.iter().enumerate() {
         let inner_html = match tag {
             hexo_tags::HexoTag::Note { content, .. } => {
-                let inner = render_with_hexo_tags(content, opts);
-                format!("<p>{}</p>", inner.trim())
+                render_with_hexo_tags(content, opts)
             }
             hexo_tags::HexoTag::GroupPicture { content, .. } => {
                 render_with_hexo_tags(content, opts)
