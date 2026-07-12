@@ -6,9 +6,9 @@ Rust 驱动的静态博客引擎，兼容 Hexo 内容格式。
 
 - **Markdown 渲染** — pulldown-cmark（表格、删除线、任务列表）
 - **微信公众号卡片** — Markdown 中的 `mp.weixin.qq.com` 链接构建时抓取标题、公众号、描述、头像和封面图，渲染为微信转发样式卡片
-- **LaTeX 数学** — 行内 `$...$` 和行间 `$$...$$`，KaTeX 服务端渲染
+- **LaTeX 公式渲染** — 行内 `$...$` 和行间 `$$...$$`，KaTeX 服务端渲染；目录标题中的行内公式也会渲染
 - **代码高亮** — syntect 逐行高亮，行号、复制按钮、换行切换、可选标题
-- **Mermaid 图表** — mermaid.js 客户端渲染（`securityLevel: 'loose'` 支持图中 LaTeX）
+- **Mermaid 图表** — mermaid.js 客户端渲染（`securityLevel: 'loose'` 支持图中 LaTeX），SVG 支持拖拽、缩放和自适应视口
 - **Hexo 兼容标签** — `{% note %}`, `{% grouppicture %}`, `{% video %}`, `{% pdf %}`
 - **目录** — 自动从标题生成，粘性侧边栏，圆点层级指示
 - **摘要** — `<!--more-->` 分割（兼容 Hexo 空格变体），无标记时显示全文
@@ -75,7 +75,7 @@ blog-rs/
 ├── static/
 │   ├── css/main.css         # 主样式表
 │   ├── css/fonts/           # KaTeX 字体
-│   └── js/main.js           # 复制/换行按钮、计数 API 客户端、热榜
+│   └── js/main.js           # 复制/换行按钮、Mermaid SVG 缩放、计数 API 客户端、热榜
 ├── templates/               # Tera HTML 模板
 │   ├── base.html            # 布局（头部、底部、CSS/JS）
 │   ├── index.html           # 文章列表 + 侧边栏 + 分页 + 热榜
@@ -374,13 +374,15 @@ Markdown 链接目标如果是 `https://mp.weixin.qq.com/...` 或 `http://mp.wei
 
 1. **提取 Hexo 标签** — 正则提取 `{% note %}`、`{% video %}` 等，替换为 `<<PLACEHOLDER_N>>` 占位符
 2. **渲染 Markdown** — pulldown-cmark 解析（占位符作为字面文本），拦截：
-   - `InlineMath` / `DisplayMath` → KaTeX 渲染
-   - `CodeBlock` → syntect 高亮（主题来自配置）或 mermaid 直通
+   - `InlineMath` / `DisplayMath` → KaTeX 渲染；标题收集时保留 `$...$`，供目录公式渲染和锚点生成使用
+   - `CodeBlock` → syntect 高亮（主题来自配置）或 mermaid 直通；Mermaid 块中的行内 `$...$` 会规范化为 Mermaid 可渲染的公式
    - `Heading` → TOC 收集 + ID 注入
    - `Link` → 微信公众号链接替换为卡片 HTML
 3. **解析占位符** — 递归渲染内部内容并替换为最终 HTML。`note` / `grouppicture` 的内部 HTML 已经由递归 Markdown 渲染产生，替换时不再额外包段落
 
 最后正则后处理修复中文字符旁的 `**粗体**` 和 `~~删除线~~`。
+
+目录使用单独的 Markdown 轮次收集标题，避免重复渲染整篇文章中的公式。生成目录 HTML 时，如果文章开启 `mathjax: true`，标题里的行内公式会由 `toc.rs` 渲染为 KaTeX。
 
 ## 部署
 
@@ -400,6 +402,7 @@ Markdown 链接目标如果是 `https://mp.weixin.qq.com/...` 或 `http://mp.wei
 ### 前端资源加载
 
 - **Mermaid.js** — 含 mermaid 代码块的页面加载
+- **svg-pan-zoom** — 含 mermaid 代码块的页面加载，用于 Mermaid SVG 拖拽和缩放
 - **Fuse.js** — 搜索页加载
 - **Giscus** — 文章页加载
 - **KaTeX CSS & 字体** — 本地打包在 `css/` 和 `css/fonts/`

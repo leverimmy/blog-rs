@@ -106,12 +106,17 @@ pub fn render_markdown(markdown: &str, opts: &RenderOptions) -> RenderResult {
             }
             Event::Start(Tag::Heading { level, .. }) if opts.enable_toc => {
                 let heading_level = *level as u8;
-                // Collect heading text
+                // Collect heading text for the anchor and TOC.
                 let mut text = String::new();
                 let mut j = i + 1;
                 while j < events.len() {
                     match &events[j] {
                         Event::Text(t) | Event::Code(t) => text.push_str(t),
+                        Event::InlineMath(latex) if opts.enable_math => {
+                            text.push('$');
+                            text.push_str(latex);
+                            text.push('$');
+                        }
                         Event::End(TagEnd::Heading(_)) => break,
                         _ => {}
                     }

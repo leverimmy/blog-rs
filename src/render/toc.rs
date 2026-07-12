@@ -3,7 +3,13 @@
 //! Produces a nested `<ul>` structure and generates URL-friendly heading IDs
 //! via `slugify` (preserves CJK characters).
 
+use regex::Regex;
 use std::fmt::Write;
+use std::sync::LazyLock;
+
+use crate::utils::html_escape;
+
+use super::math;
 
 #[derive(Debug, Clone)]
 pub struct TocItem {
@@ -12,8 +18,11 @@ pub struct TocItem {
     pub text: String,
 }
 
+static INLINE_MATH_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)(^|[^\\$])\$([^$\n]+?)\$").unwrap());
+
 /// Generate a nested HTML `<nav>` TOC from heading items.
-pub fn generate_toc(items: &[TocItem]) -> String {
+pub fn generate_toc(items: &[TocItem], render_math: bool) -> String {
     if items.is_empty() {
         return String::new();
     }
@@ -30,7 +39,8 @@ pub fn generate_toc(items: &[TocItem]) -> String {
             html.push_str("</ul>\n");
             current_level -= 1;
         }
-        let _ = write!(html, "<li><a href=\"#{}\">{}</a></li>\n", item.id, item.text);
+        let text = render_toc_text(&item.text, render_math);
+        let _ = write!(html, "<li><a href=\"#{}\">{}</a></li>\n", item.id, text);
     }
 
     while current_level > 0 {
@@ -39,6 +49,29 @@ pub fn generate_toc(items: &[TocItem]) -> String {
     }
 
     html.push_str("</ul>\n</nav>");
+    html
+}
+
+fn render_toc_text(text: &str, render_math: bool) -> String {
+    if !render_math {
+        return html_escape(text);
+    }
+
+    let mut html = String::new();
+    let mut last = 0;
+
+    for caps in INLINE_MATH_RE.captures_iter(text) {
+        let whole = caps.get(0).expect("whole match exists");
+        let prefix = caps.get(1).expect("prefix capture exists");
+        let latex = caps.get(2).expect("latex capture exists");
+
+        html.push_str(&html_escape(&text[last..prefix.start()]));
+        html.push_str(&html_escape(prefix.as_str()));
+        html.push_str(&math::render_inline(latex.as_str()));
+        last = whole.end();
+    }
+
+    html.push_str(&html_escape(&text[last..]));
     html
 }
 

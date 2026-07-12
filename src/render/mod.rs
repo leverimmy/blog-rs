@@ -72,7 +72,7 @@ pub fn render_post(
         code_theme: code_theme.to_string(),
         wechat_previews: None,
     });
-    let toc_html = toc::generate_toc(&toc_result.toc);
+    let toc_html = toc::generate_toc(&toc_result.toc, post.frontmatter.mathjax);
 
     PostHtml {
         content,

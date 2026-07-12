@@ -160,6 +160,7 @@ img { max-width: 100%; height: auto; }
 }
 .toc a { color: #666; font-size: 0.85rem; }
 .toc a:hover { color: #333; }
+.toc .katex { font-size: 1em; }
 
 /* ===== Post ===== */
 .post-header { margin-bottom: 24px; }
