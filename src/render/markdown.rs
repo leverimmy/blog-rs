@@ -7,6 +7,8 @@
 //! - WeChat public account links → share-card style anchors
 
 use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag, TagEnd};
+use regex::{Captures, Regex};
+use std::sync::LazyLock;
 
 use crate::utils::html_escape;
 
@@ -28,6 +30,9 @@ pub struct RenderResult {
     pub html: String,
     pub toc: Vec<TocItem>,
 }
+
+static MERMAID_INLINE_MATH_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)(^|[^\\$])\$([^$\n]+?)\$").unwrap());
 
 /// Render a markdown string to HTML, intercepting math/code/heading events.
 pub fn render_markdown(markdown: &str, opts: &RenderOptions) -> RenderResult {
@@ -77,6 +82,11 @@ pub fn render_markdown(markdown: &str, opts: &RenderOptions) -> RenderResult {
                 // Check for mermaid blocks — render as <pre class="mermaid">
                 let lang = fence_info.split_whitespace().next().unwrap_or("");
                 let highlighted = if lang == "mermaid" {
+                    let code = if opts.enable_math {
+                        normalize_mermaid_inline_math(&code)
+                    } else {
+                        code
+                    };
                     format!(
                         "<div class=\"mermaid-container\"><pre class=\"mermaid\">{}</pre></div>",
                         html_escape(&code)
@@ -146,6 +156,14 @@ pub fn render_markdown(markdown: &str, opts: &RenderOptions) -> RenderResult {
         html: html_output,
         toc: toc_items,
     }
+}
+
+fn normalize_mermaid_inline_math(code: &str) -> String {
+    MERMAID_INLINE_MATH_RE
+        .replace_all(code, |caps: &Captures| {
+            format!("{}$${}$$", &caps[1], &caps[2])
+        })
+        .into_owned()
 }
 
 fn find_link_end(events: &[Event], start: usize) -> Option<usize> {
@@ -264,6 +282,35 @@ impl WechatCardMedia<'_> {
             Self::Hero(_) => String::new(),
             Self::Icon => "<span class=\"wechat-card-icon\" aria-hidden=\"true\"></span>".to_string(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_mermaid_inline_math;
+
+    #[test]
+    fn normalizes_inline_math_for_mermaid() {
+        let code = "graph LR\nA(($q_0$)) --> |$0, 1$| B\n";
+
+        assert_eq!(
+            normalize_mermaid_inline_math(code),
+            "graph LR\nA(($$q_0$$)) --> |$$0, 1$$| B\n"
+        );
+    }
+
+    #[test]
+    fn keeps_existing_mermaid_math_and_escaped_dollars() {
+        let code = r#"graph LR
+A["$$q_0$$ and \$5"] --> |$a$| B
+"#;
+
+        assert_eq!(
+            normalize_mermaid_inline_math(code),
+            r#"graph LR
+A["$$q_0$$ and \$5"] --> |$$a$$| B
+"#
+        );
     }
 }
 
