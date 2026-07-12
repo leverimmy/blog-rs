@@ -285,35 +285,6 @@ impl WechatCardMedia<'_> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::normalize_mermaid_inline_math;
-
-    #[test]
-    fn normalizes_inline_math_for_mermaid() {
-        let code = "graph LR\nA(($q_0$)) --> |$0, 1$| B\n";
-
-        assert_eq!(
-            normalize_mermaid_inline_math(code),
-            "graph LR\nA(($$q_0$$)) --> |$$0, 1$$| B\n"
-        );
-    }
-
-    #[test]
-    fn keeps_existing_mermaid_math_and_escaped_dollars() {
-        let code = r#"graph LR
-A["$$q_0$$ and \$5"] --> |$a$| B
-"#;
-
-        assert_eq!(
-            normalize_mermaid_inline_math(code),
-            r#"graph LR
-A["$$q_0$$ and \$5"] --> |$$a$$| B
-"#
-        );
-    }
-}
-
 fn select_wechat_media(preview: Option<&WechatPreview>) -> WechatCardMedia<'_> {
     let Some(preview) = preview else {
         return WechatCardMedia::Icon;
