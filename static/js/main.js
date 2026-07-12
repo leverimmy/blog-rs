@@ -20,6 +20,62 @@ function toggleWrap(btn) {
     btn.classList.toggle('active');
 }
 
+function resizeMermaidViewport(container, svg) {
+    var viewBox = svg.viewBox && svg.viewBox.baseVal;
+    if (!viewBox || !viewBox.width || !viewBox.height) return;
+
+    var width = container.clientWidth || svg.clientWidth || viewBox.width;
+    var height = Math.round(width * viewBox.height / viewBox.width);
+    height = Math.max(280, Math.min(720, height));
+    container.style.setProperty('--mermaid-height', height + 'px');
+}
+
+function initMermaidZoom() {
+    var diagrams = document.querySelectorAll('.mermaid-container .mermaid svg');
+    diagrams.forEach(function(svg) {
+        if (svg.dataset.zoomReady) return;
+
+        var container = svg.closest('.mermaid-container');
+        if (!container) return;
+
+        container.classList.add('mermaid-zoomable');
+        resizeMermaidViewport(container, svg);
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.dataset.zoomReady = 'true';
+
+        if (!window.svgPanZoom) return;
+
+        try {
+            svg._panZoom = svgPanZoom(svg, {
+                controlIconsEnabled: true,
+                fit: true,
+                center: true,
+                minZoom: 0.5,
+                maxZoom: 20,
+                zoomScaleSensitivity: 0.25
+            });
+        } catch (e) {
+            console.warn('Failed to initialize Mermaid zoom', e);
+        }
+    });
+}
+
+window.initMermaidZoom = initMermaidZoom;
+
+window.addEventListener('resize', function() {
+    document.querySelectorAll('.mermaid-container .mermaid svg[data-zoom-ready="true"]').forEach(function(svg) {
+        var container = svg.closest('.mermaid-container');
+        if (!container) return;
+        resizeMermaidViewport(container, svg);
+        if (svg._panZoom) {
+            svg._panZoom.resize();
+            svg._panZoom.fit();
+            svg._panZoom.center();
+        }
+    });
+});
+
 // Increment page view on article detail pages
 (function() {
     var el = document.getElementById('page-views');

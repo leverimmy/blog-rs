@@ -509,20 +509,46 @@ img { max-width: 100%; height: auto; }
 
 /* ===== Mermaid ===== */
 .mermaid-container {
-    margin: 1em 0;
+    --mermaid-height: 420px;
+    margin: 1.25em 0;
     text-align: center;
     overflow-x: auto;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
 }
 .mermaid-container pre.mermaid {
     display: inline-block;
     text-align: left;
-    background: #fff;
+    margin: 0;
     padding: 16px;
-    border-radius: 8px;
-    border: 1px solid #e1e4e8;
     font-size: 0.85rem;
     line-height: 1.5;
     font-family: monospace;
+}
+.mermaid-container.mermaid-zoomable {
+    overflow: hidden;
+}
+.mermaid-container .mermaid[data-processed="true"] {
+    display: block;
+    width: 100%;
+    height: var(--mermaid-height);
+    min-height: 280px;
+    padding: 0;
+    text-align: center;
+    line-height: 1;
+    font-family: inherit;
+    cursor: grab;
+    touch-action: none;
+}
+.mermaid-container .mermaid[data-processed="true"]:active {
+    cursor: grabbing;
+}
+.mermaid-container .mermaid[data-processed="true"] svg {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
 }
 
 /* ===== Post Copyright ===== */

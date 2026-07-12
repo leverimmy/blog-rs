@@ -50,7 +50,13 @@
     <script src="/js/main.js"></script>
     {% if has_mermaid %}
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true,theme:'default',securityLevel:'loose'});</script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js"></script>
+    <script>
+        mermaid.initialize({startOnLoad:false,theme:'default',securityLevel:'loose'});
+        mermaid.run().then(function() {
+            if (window.initMermaidZoom) window.initMermaidZoom();
+        });
+    </script>
     {% endif %}
 </body>
 </html>
