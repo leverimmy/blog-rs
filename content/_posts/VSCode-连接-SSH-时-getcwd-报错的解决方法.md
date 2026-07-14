@@ -171,7 +171,7 @@ code ~
 Host alias-of-the-server
   HostName a.b.c.d
   User xxx
-  Port 6988
+  Port yyyy
   RemoteCommand cd /tmp && exec /bin/bash
 ```
 
