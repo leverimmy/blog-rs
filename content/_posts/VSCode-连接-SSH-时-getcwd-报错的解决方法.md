@@ -43,7 +43,7 @@ sh: 0: getcwd() failed: No such file or directory
 Error: ENOENT: process.cwd failed with error no such file or directory, uv_cwd
 ```
 
-{% note info no-icon VSCode Remote - SSH 完整日志（已脱敏） %}
+{% note info no-icon VSCode Remote - SSH 完整日志（已脱敏，节选） %}
 ```
 [14:45:19.952] stderr> Authenticated to <HOST> ([<HOST>]:<PORT>) using "password".
 [14:45:20.047] stderr> client_global_hostkeys_prove_confirm: server gave bad signature for RSA key 0: incorrect signature
