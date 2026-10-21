@@ -534,7 +534,7 @@ img { max-width: 100%; height: auto; }
     display: block;
     width: 100%;
     height: var(--mermaid-height);
-    min-height: 280px;
+    min-height: 160px;
     padding: 0;
     text-align: center;
     line-height: 1;

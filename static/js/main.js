@@ -21,12 +21,19 @@ function toggleWrap(btn) {
 }
 
 function resizeMermaidViewport(container, svg) {
-    var viewBox = svg.viewBox && svg.viewBox.baseVal;
+    var viewBox = svg._mermaidViewBox || (svg.viewBox && svg.viewBox.baseVal);
     if (!viewBox || !viewBox.width || !viewBox.height) return;
 
+    // svg-pan-zoom removes viewBox, so keep its original dimensions for resizing.
+    if (!svg._mermaidViewBox) {
+        svg._mermaidViewBox = { width: viewBox.width, height: viewBox.height };
+    }
+
     var width = container.clientWidth || svg.clientWidth || viewBox.width;
-    var height = Math.round(width * viewBox.height / viewBox.width);
-    height = Math.max(280, Math.min(720, height));
+    // Base the viewport on the diagram's natural size, shrinking wide diagrams to fit.
+    var scale = Math.min(1, width / viewBox.width);
+    var height = Math.round(viewBox.height * scale);
+    height = Math.max(160, Math.min(420, height));
     container.style.setProperty('--mermaid-height', height + 'px');
 }
 
@@ -67,6 +74,9 @@ window.addEventListener('resize', function() {
     document.querySelectorAll('.mermaid-container .mermaid svg[data-zoom-ready="true"]').forEach(function(svg) {
         var container = svg.closest('.mermaid-container');
         if (!container) return;
+        // Hidden viewports must not reset the pan/zoom transform to a zero scale.
+        var bounds = svg.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return;
         resizeMermaidViewport(container, svg);
         if (svg._panZoom) {
             svg._panZoom.resize();

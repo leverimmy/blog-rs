@@ -402,7 +402,7 @@ Markdown 链接目标如果是 `https://mp.weixin.qq.com/...` 或 `http://mp.wei
 ### 前端资源加载
 
 - **Mermaid.js** — 含 mermaid 代码块的页面加载
-- **svg-pan-zoom** — 含 mermaid 代码块的页面加载，用于 Mermaid SVG 拖拽和缩放
+- **svg-pan-zoom** — 含 mermaid 代码块的页面加载，用于 Mermaid SVG 拖拽和缩放；视口高度按图表原始尺寸和可用宽度计算，限制在 160–420px，窗口大小变化时重新适配
 - **Fuse.js** — 搜索页加载
 - **Giscus** — 文章页加载
 - **KaTeX CSS & 字体** — 本地打包在 `css/` 和 `css/fonts/`
